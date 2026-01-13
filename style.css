@@ -121,6 +121,7 @@ body {
     border: 4px solid #ff00ff;
     box-shadow: 0 0 30px rgba(255, 0, 255, 0.5);
     max-width: 80%;
+    box-sizing: border-box;
 }
 
 .menu-screen.hidden {
@@ -397,6 +398,7 @@ body {
     .canvas-wrapper {
         width: 100%;
         max-width: 100%;
+        position: relative;
     }
     
     .header {
@@ -427,21 +429,26 @@ body {
         border-width: 1px;
     }
     
+    /* Menus inside canvas on mobile */
     .menu-screen {
-        padding: 40px 50px;
-        width: 80%;
-        max-width: 90%;
+        padding: 25px 20px;
+        width: 85%;
+        max-width: 85%;
+        max-height: 90%;
+        overflow-y: auto;
+        border-width: 3px;
     }
     
     .menu-screen h2 {
-        font-size: 60px;
-        letter-spacing: 8px;
-        margin: 0 0 20px 0;
+        font-size: 42px;
+        letter-spacing: 6px;
+        margin: 0 0 15px 0;
     }
     
     .menu-screen p {
-        font-size: 18px;
+        font-size: 16px;
         letter-spacing: 2px;
+        margin: 0 0 15px 0;
     }
     
     .game-over-text-mobile {
@@ -451,22 +458,42 @@ body {
     .mode-buttons,
     .difficulty-buttons {
         flex-direction: column;
-        gap: 15px;
-        margin-top: 20px;
+        gap: 12px;
+        margin-top: 15px;
         width: 100%;
     }
     
     .mode-btn,
     .difficulty-btn {
-        font-size: 20px;
-        padding: 12px 25px;
+        font-size: 18px;
+        padding: 12px 20px;
         width: 100%;
     }
     
     .game-over-buttons {
         flex-direction: column;
-        gap: 15px;
+        gap: 12px;
         width: 100%;
+    }
+    
+    .back-btn {
+        margin-top: 20px;
+        font-size: 14px;
+        padding: 8px 16px;
+    }
+    
+    .room-status {
+        font-size: 12px !important;
+        margin-top: 15px !important;
+    }
+    
+    .waiting-animation .dot {
+        width: 15px;
+        height: 15px;
+    }
+    
+    .waiting-timer {
+        font-size: 14px !important;
     }
     
     .swipe-guide {
@@ -476,52 +503,104 @@ body {
 
 @media (max-width: 480px) {
     .header {
-        font-size: 12px;
-        height: 40px;
+        font-size: 11px;
+        height: 38px;
+        padding: 0 8px;
     }
     
     .score-section,
     .high-score-section {
-        font-size: 12px;
+        font-size: 11px;
+        gap: 3px;
     }
     
     .icon {
-        font-size: 14px;
+        font-size: 13px;
     }
     
     .difficulty-display {
-        font-size: 9px;
+        font-size: 8px;
     }
     
+    /* Menus fit inside canvas on small mobile */
     .menu-screen {
-        padding: 30px 35px;
+        padding: 20px 15px;
+        width: 90%;
+        max-width: 90%;
+        border-width: 2px;
     }
     
     .menu-screen h2 {
-        font-size: 48px;
-        letter-spacing: 6px;
+        font-size: 32px;
+        letter-spacing: 4px;
+        margin: 0 0 10px 0;
+        text-shadow: 
+            -2px -2px 0 #ff00ff,
+            2px -2px 0 #ff00ff,
+            -2px 2px 0 #ff00ff,
+            2px 2px 0 #ff00ff,
+            0 0 15px #ff00ff;
     }
     
     .menu-screen p {
-        font-size: 16px;
+        font-size: 14px;
+        letter-spacing: 1px;
+        margin: 0 0 10px 0;
+    }
+    
+    .mode-buttons,
+    .difficulty-buttons {
+        gap: 10px;
+        margin-top: 12px;
     }
     
     .mode-btn,
     .difficulty-btn {
-        font-size: 18px;
-        padding: 10px 20px;
+        font-size: 16px;
+        padding: 10px 15px;
+        border-width: 2px;
+    }
+    
+    .game-over-buttons {
+        gap: 10px;
+        margin-top: 15px;
+    }
+    
+    .back-btn {
+        margin-top: 15px;
+        font-size: 12px;
+        padding: 6px 12px;
+    }
+    
+    .room-status {
+        font-size: 11px !important;
+        margin-top: 10px !important;
+    }
+    
+    .waiting-animation {
+        margin-bottom: 15px;
+    }
+    
+    .waiting-animation .dot {
+        width: 12px;
+        height: 12px;
+    }
+    
+    .waiting-timer {
+        font-size: 12px !important;
+        margin-top: 8px !important;
     }
     
     .swipe-guide {
-        bottom: 15px;
-        padding: 10px 20px;
+        bottom: 10px;
+        padding: 8px 15px;
     }
     
     .swipe-guide p {
-        font-size: 12px;
+        font-size: 11px;
     }
     
     .arrow {
-        font-size: 22px;
+        font-size: 18px;
     }
 }
