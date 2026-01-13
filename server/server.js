@@ -83,24 +83,37 @@ io.on('connection', (socket) => {
     socket.on('join-queue', (data) => {
         const difficulty = data?.difficulty || 'normal';
         
+        console.log('Join queue request from:', socket.id, 'Current players:', gameRoom.players.length, 'isPlaying:', gameRoom.isPlaying);
+        
         // Room is full/playing
-        if (gameRoom.isPlaying || gameRoom.players.length >= 2) {
+        if (gameRoom.isPlaying) {
+            console.log('Game already in progress, rejecting:', socket.id);
             socket.emit('room-status', { available: false });
             return;
         }
-
-        // First player joins
-        if (gameRoom.players.length === 0) {
-            gameRoom.players.push(socket.id);
+        
+        // Check if player is already in the queue
+        if (gameRoom.players.includes(socket.id)) {
+            console.log('Player already in queue:', socket.id);
+            return;
+        }
+        
+        // Add player to room
+        gameRoom.players.push(socket.id);
+        console.log('Player added. Total players:', gameRoom.players.length);
+        
+        // If this is the first player, make them wait
+        if (gameRoom.players.length === 1) {
             gameRoom.difficulty = difficulty;
             waitingPlayer = socket.id;
             
             socket.emit('waiting');
-            io.emit('room-status', { available: false }); // Room now taken
+            io.emit('room-status', { available: false });
             
             // Set timeout for waiting
             waitingTimeout = setTimeout(() => {
                 if (waitingPlayer === socket.id && gameRoom.players.length === 1) {
+                    console.log('Wait timeout for:', socket.id);
                     socket.emit('wait-timeout');
                     gameRoom.players = [];
                     waitingPlayer = null;
@@ -110,25 +123,27 @@ io.on('connection', (socket) => {
             
             console.log('Player 1 waiting:', socket.id);
         }
-        // Second player joins - start game!
-        else if (gameRoom.players.length === 1 && gameRoom.players[0] !== socket.id) {
+        // If we have 2 players, start the game!
+        else if (gameRoom.players.length === 2) {
             // Clear waiting timeout
             if (waitingTimeout) {
                 clearTimeout(waitingTimeout);
                 waitingTimeout = null;
             }
             
-            gameRoom.players.push(socket.id);
             gameRoom.isPlaying = true;
             gameRoom.food = generateFood();
             gameRoom.scores = { p1: 0, p2: 0 };
             waitingPlayer = null;
+            
+            console.log('Starting game with players:', gameRoom.players);
             
             // Notify both players
             const player1Socket = io.sockets.sockets.get(gameRoom.players[0]);
             const player2Socket = io.sockets.sockets.get(gameRoom.players[1]);
             
             if (player1Socket) {
+                console.log('Sending game-start to player 1:', gameRoom.players[0]);
                 player1Socket.emit('game-start', {
                     playerNumber: 1,
                     food: gameRoom.food,
@@ -137,6 +152,7 @@ io.on('connection', (socket) => {
             }
             
             if (player2Socket) {
+                console.log('Sending game-start to player 2:', gameRoom.players[1]);
                 player2Socket.emit('game-start', {
                     playerNumber: 2,
                     food: gameRoom.food,
@@ -146,6 +162,12 @@ io.on('connection', (socket) => {
             
             io.emit('room-status', { available: false });
             console.log('Game started! Players:', gameRoom.players);
+        }
+        // More than 2 players somehow (shouldn't happen)
+        else {
+            console.log('Too many players, removing:', socket.id);
+            gameRoom.players = gameRoom.players.filter(id => id !== socket.id);
+            socket.emit('room-status', { available: false });
         }
     });
 
