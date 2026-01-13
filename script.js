@@ -1,9 +1,8 @@
 // ============================================
 // CONFIGURATION
 // ============================================
-// Change this URL after deploying server to Railway
-const SOCKET_URL = 'http://localhost:3000';  // Development
-// const SOCKET_URL = 'https://your-server.railway.app'; // Production
+// Server URL - Railway production
+const SOCKET_URL = 'https://snack-multi-player-production.up.railway.app';
 
 const WAIT_TIMEOUT = 300000; // 5 minutes in ms
 
