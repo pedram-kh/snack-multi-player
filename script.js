@@ -367,6 +367,31 @@ function showGameOver(isWinner, winner, scores) {
 // ============================================
 // DRAWING FUNCTIONS
 // ============================================
+
+// Draw heart shape
+function drawHeart(ctx, x, y, size, color) {
+    ctx.fillStyle = color;
+    ctx.beginPath();
+    const topX = x;
+    const topY = y + size * 0.3;
+    
+    ctx.moveTo(topX, topY);
+    // Left curve
+    ctx.bezierCurveTo(
+        topX - size * 0.5, topY - size * 0.5,
+        topX - size * 0.5, topY + size * 0.3,
+        topX, topY + size * 0.6
+    );
+    // Right curve
+    ctx.moveTo(topX, topY);
+    ctx.bezierCurveTo(
+        topX + size * 0.5, topY - size * 0.5,
+        topX + size * 0.5, topY + size * 0.3,
+        topX, topY + size * 0.6
+    );
+    ctx.fill();
+}
+
 function drawGrid() {
     for (let row = 0; row < tileCount; row++) {
         for (let col = 0; col < tileCount; col++) {
@@ -464,32 +489,40 @@ function drawSnake(snake, color, dirX, dirY) {
             // Body
             ctx.fillRect(x, y, gridSize, gridSize);
             
-            // Stripes
+            // Decorations on body segments
             const isBodySegment = snake.length >= 3 && index > 0 && index < snake.length - 2;
             if (isBodySegment) {
-                let segmentDx = 0, segmentDy = 0;
-                if (index > 0) {
-                    const prevSegment = snake[index - 1];
-                    segmentDx = segment.x - prevSegment.x;
-                    segmentDy = segment.y - prevSegment.y;
-                }
-                
                 const centerX = x + gridSize / 2;
                 const centerY = y + gridSize / 2;
-                const eyeOffset = 5;
-                const lineLength = gridSize;
-                const lineThickness = 2;
                 
-                ctx.fillStyle = 'white';
-                
-                if (segmentDx === 1 || segmentDx === -1) {
-                    const lineX = x;
-                    ctx.fillRect(lineX, centerY - eyeOffset - lineThickness / 2, lineLength, lineThickness);
-                    ctx.fillRect(lineX, centerY + eyeOffset - lineThickness / 2, lineLength, lineThickness);
-                } else if (segmentDy === 1 || segmentDy === -1) {
-                    const lineY = y;
-                    ctx.fillRect(centerX - eyeOffset - lineThickness / 2, lineY, lineThickness, lineLength);
-                    ctx.fillRect(centerX + eyeOffset - lineThickness / 2, lineY, lineThickness, lineLength);
+                // Pink snake (player 2) gets hearts, blue snake gets stripes
+                if (color === player2Color) {
+                    // Draw red heart for pink snake
+                    drawHeart(ctx, centerX, centerY - 2, gridSize * 0.5, '#ff0000');
+                } else {
+                    // Draw white stripes for blue snake
+                    let segmentDx = 0, segmentDy = 0;
+                    if (index > 0) {
+                        const prevSegment = snake[index - 1];
+                        segmentDx = segment.x - prevSegment.x;
+                        segmentDy = segment.y - prevSegment.y;
+                    }
+                    
+                    const eyeOffset = 5;
+                    const lineLength = gridSize;
+                    const lineThickness = 2;
+                    
+                    ctx.fillStyle = 'white';
+                    
+                    if (segmentDx === 1 || segmentDx === -1) {
+                        const lineX = x;
+                        ctx.fillRect(lineX, centerY - eyeOffset - lineThickness / 2, lineLength, lineThickness);
+                        ctx.fillRect(lineX, centerY + eyeOffset - lineThickness / 2, lineLength, lineThickness);
+                    } else if (segmentDy === 1 || segmentDy === -1) {
+                        const lineY = y;
+                        ctx.fillRect(centerX - eyeOffset - lineThickness / 2, lineY, lineThickness, lineLength);
+                        ctx.fillRect(centerX + eyeOffset - lineThickness / 2, lineY, lineThickness, lineLength);
+                    }
                 }
             }
         }
