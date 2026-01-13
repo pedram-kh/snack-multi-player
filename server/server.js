@@ -222,12 +222,23 @@ io.on('connection', (socket) => {
         // Generate new food
         gameRoom.food = generateFood();
         
-        // Broadcast new food position to both players
-        gameRoom.players.forEach(playerId => {
-            const playerSocket = io.sockets.sockets.get(playerId);
-            if (playerSocket) {
-                playerSocket.emit('food-update', gameRoom.food);
-            }
+        // Tell opponent that this player ate food (so they can grow the snake on their view)
+        const opponentIndex = playerIndex === 0 ? 1 : 0;
+        const opponentId = gameRoom.players[opponentIndex];
+        const opponentSocket = io.sockets.sockets.get(opponentId);
+        
+        if (opponentSocket) {
+            opponentSocket.emit('opponent-ate', { 
+                playerNumber: playerIndex + 1,
+                newFood: gameRoom.food,
+                scores: gameRoom.scores
+            });
+        }
+        
+        // Send new food and score to the player who ate
+        socket.emit('food-update', { 
+            newFood: gameRoom.food, 
+            scores: gameRoom.scores 
         });
     });
 

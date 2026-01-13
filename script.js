@@ -67,11 +67,13 @@ let playerNumber = 1; // 1 or 2 in multiplayer
 let snake1 = [{ x: 5, y: 5 }];
 let dx1 = 0;
 let dy1 = 0;
+let snake1GrowPending = false;
 
 // Player 2 Snake (Pink)
 let snake2 = [{ x: tileCount - 6, y: tileCount - 6 }];
 let dx2 = 0;
 let dy2 = 0;
+let snake2GrowPending = false;
 
 let food = {};
 let score = 0;
@@ -143,7 +145,20 @@ function connectSocket() {
     });
     
     socket.on('food-update', (data) => {
-        food = data;
+        food = data.newFood;
+        // Update score display
+        score = playerNumber === 1 ? data.scores.p1 : data.scores.p2;
+        scoreElement.textContent = score;
+    });
+    
+    socket.on('opponent-ate', (data) => {
+        food = data.newFood;
+        // Set flag to grow opponent's snake on next move
+        if (playerNumber === 1) {
+            snake2GrowPending = true;
+        } else {
+            snake1GrowPending = true;
+        }
     });
     
     socket.on('opponent-died', (data) => {
@@ -561,43 +576,65 @@ function generateFood() {
     }
 }
 
-function moveSnake(snake, dx, dy, isPlayer) {
+function moveSnake(snake, dx, dy, isMySnake, snakeNumber) {
     if (dx === 0 && dy === 0) return true;
     
     const head = { x: snake[0].x + dx, y: snake[0].y + dy };
     
-    // Wall collision
-    if (head.x < 0 || head.x >= tileCount || head.y < 0 || head.y >= tileCount) {
-        return false;
-    }
-    
-    // Self collision
-    for (let i = 1; i < snake.length; i++) {
-        if (head.x === snake[i].x && head.y === snake[i].y) {
+    // Wall collision (only check for my snake)
+    if (isMySnake) {
+        if (head.x < 0 || head.x >= tileCount || head.y < 0 || head.y >= tileCount) {
             return false;
         }
+        
+        // Self collision
+        for (let i = 1; i < snake.length; i++) {
+            if (head.x === snake[i].x && head.y === snake[i].y) {
+                return false;
+            }
+        }
+    } else {
+        // For opponent snake, wrap around or just move (no collision check)
+        // Just let them move, their client handles collision
     }
     
     snake.unshift(head);
     
-    // Food collision
-    if (head.x === food.x && head.y === food.y) {
-        score++;
-        scoreElement.textContent = score;
-        playEatSound();
-        
-        if (gameMode === 'single') {
-            if (score > highScore) {
-                highScore = score;
-                highScoreElement.textContent = highScore;
-                localStorage.setItem('snakeHighScore', highScore);
+    // Check if this snake should grow (pending growth from eating)
+    let shouldGrow = false;
+    
+    if (isMySnake) {
+        // Food collision for my snake
+        if (head.x === food.x && head.y === food.y) {
+            shouldGrow = true;
+            score++;
+            scoreElement.textContent = score;
+            playEatSound();
+            
+            if (gameMode === 'single') {
+                if (score > highScore) {
+                    highScore = score;
+                    highScoreElement.textContent = highScore;
+                    localStorage.setItem('snakeHighScore', highScore);
+                }
+                generateFood();
+            } else {
+                // In multiplayer, server generates new food
+                socket.emit('food-eaten', { x: food.x, y: food.y });
             }
-            generateFood();
-        } else {
-            // In multiplayer, server generates new food
-            socket.emit('food-eaten', { x: food.x, y: food.y });
         }
     } else {
+        // Check if opponent has pending growth
+        if (snakeNumber === 1 && snake1GrowPending) {
+            shouldGrow = true;
+            snake1GrowPending = false;
+        } else if (snakeNumber === 2 && snake2GrowPending) {
+            shouldGrow = true;
+            snake2GrowPending = false;
+        }
+    }
+    
+    if (!shouldGrow) {
         snake.pop();
     }
     
@@ -620,7 +657,7 @@ function gameLoop() {
     
     if (gameMode === 'single') {
         // Single player
-        if (!moveSnake(snake1, dx1, dy1, true)) {
+        if (!moveSnake(snake1, dx1, dy1, true, 1)) {
             gameRunning = false;
             showGameOver(false, 0, { p1: score, p2: 0 });
             return;
@@ -630,20 +667,22 @@ function gameLoop() {
         const mySnake = playerNumber === 1 ? snake1 : snake2;
         const myDx = playerNumber === 1 ? dx1 : dx2;
         const myDy = playerNumber === 1 ? dy1 : dy2;
+        const mySnakeNumber = playerNumber;
         
         const opponentSnake = playerNumber === 1 ? snake2 : snake1;
         const opDx = playerNumber === 1 ? dx2 : dx1;
         const opDy = playerNumber === 1 ? dy2 : dy1;
+        const opSnakeNumber = playerNumber === 1 ? 2 : 1;
         
         // Move my snake
-        if (!moveSnake(mySnake, myDx, myDy, true)) {
+        if (!moveSnake(mySnake, myDx, myDy, true, mySnakeNumber)) {
             gameRunning = false;
             socket.emit('player-died');
             return;
         }
         
         // Move opponent snake (locally for display)
-        moveSnake(opponentSnake, opDx, opDy, false);
+        moveSnake(opponentSnake, opDx, opDy, false, opSnakeNumber);
     }
     
     // Draw
@@ -697,6 +736,8 @@ function startMultiplayerGame() {
     snake2 = [{ x: tileCount - 6, y: tileCount - 6 }];
     dx1 = 0; dy1 = 0;
     dx2 = 0; dy2 = 0;
+    snake1GrowPending = false;
+    snake2GrowPending = false;
     score = 0;
     scoreElement.textContent = score;
     
