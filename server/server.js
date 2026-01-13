@@ -218,25 +218,37 @@ io.on('connection', (socket) => {
         
         gameRoom.isPlaying = false;
         
-        // Notify opponent they won
+        // Determine winner by score (higher score wins)
+        let winner;
+        if (gameRoom.scores.p1 > gameRoom.scores.p2) {
+            winner = 1;
+        } else if (gameRoom.scores.p2 > gameRoom.scores.p1) {
+            winner = 2;
+        } else {
+            // If tied, survivor wins
+            const opponentIndex = playerIndex === 0 ? 1 : 0;
+            winner = opponentIndex + 1;
+        }
+        
+        // Notify opponent
         const opponentIndex = playerIndex === 0 ? 1 : 0;
         const opponentId = gameRoom.players[opponentIndex];
         const opponentSocket = io.sockets.sockets.get(opponentId);
         
         if (opponentSocket) {
             opponentSocket.emit('opponent-died', {
-                winner: opponentIndex + 1,
+                winner: winner,
                 scores: gameRoom.scores
             });
         }
         
         // Notify the player who died
         socket.emit('you-died', {
-            winner: opponentIndex + 1,
+            winner: winner,
             scores: gameRoom.scores
         });
         
-        console.log('Player died:', socket.id, 'Winner: Player', opponentIndex + 1);
+        console.log('Game over! Scores - P1:', gameRoom.scores.p1, 'P2:', gameRoom.scores.p2, 'Winner: Player', winner);
     });
 
     // Rematch request

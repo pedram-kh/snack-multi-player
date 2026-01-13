@@ -326,20 +326,32 @@ function updateWaitingTimer() {
 }
 
 function showGameOver(isWinner, winner, scores) {
-    playGameOverSound();
-    if (isWinner) {
-        playWinSound();
-    }
-    
     if (gameMode === 'multi') {
-        gameOverTitle.textContent = isWinner ? 'YOU WIN!' : 'YOU LOSE';
-        gameOverMessage.textContent = `Final Score - P1: ${scores.p1} | P2: ${scores.p2}`;
+        // Determine if current player won based on scores
+        const myScore = playerNumber === 1 ? scores.p1 : scores.p2;
+        const opponentScore = playerNumber === 1 ? scores.p2 : scores.p1;
+        
+        let didWin = winner === playerNumber;
+        
+        if (didWin) {
+            playWinSound();
+            gameOverTitle.textContent = 'YOU WIN!';
+        } else if (scores.p1 === scores.p2) {
+            playGameOverSound();
+            gameOverTitle.textContent = 'YOU LOSE';
+        } else {
+            playGameOverSound();
+            gameOverTitle.textContent = 'YOU LOSE';
+        }
+        
+        gameOverMessage.textContent = `Final Score - You: ${myScore} | Opponent: ${opponentScore}`;
         multiplayerButtons.classList.remove('hidden');
         rematchBtn.classList.remove('hidden');
         rematchBtn.textContent = 'REMATCH';
         rematchBtn.style.borderColor = '#00ff00';
         rematchBtn.style.color = '#00ff00';
     } else {
+        playGameOverSound();
         gameOverTitle.textContent = 'GAME OVER';
         gameOverMessage.textContent = 'Press SPACE to return to menu';
         multiplayerButtons.classList.add('hidden');
