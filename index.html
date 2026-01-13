@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Snake Game - Multiplayer</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+</head>
+<body>
+    <div class="game-container">
+        <div class="header">
+            <div class="score-section">
+                <span class="icon apple-icon">🍎</span>
+                <span class="score-label">Score: <span id="score">0</span></span>
+            </div>
+            <div class="high-score-section">
+                <span class="icon trophy-icon">🏆</span>
+                <span class="high-score-label">High: <span id="highScore">0</span></span>
+            </div>
+            <div class="difficulty-display">
+                <span id="difficultyDisplay">Normal</span>
+            </div>
+            <div class="sound-section">
+                <button class="sound-btn" id="soundBtn">🔊</button>
+            </div>
+        </div>
+        <div class="canvas-wrapper">
+            <canvas id="gameCanvas"></canvas>
+            
+            <!-- Main Menu - Player Mode Selection -->
+            <div class="menu-screen" id="mainMenu">
+                <h2>SNAKE</h2>
+                <p>Select Mode</p>
+                <div class="mode-buttons">
+                    <button class="mode-btn" id="onePlayerBtn">1 PLAYER</button>
+                    <button class="mode-btn" id="twoPlayerBtn">2 PLAYERS</button>
+                </div>
+                <p class="room-status" id="roomStatus"></p>
+            </div>
+            
+            <!-- Difficulty Selection (1 Player) -->
+            <div class="menu-screen hidden" id="difficultyMenu">
+                <h2>SNAKE</h2>
+                <p>Select Difficulty</p>
+                <div class="difficulty-buttons">
+                    <button class="difficulty-btn" data-difficulty="easy">EASY</button>
+                    <button class="difficulty-btn" data-difficulty="normal">NORMAL</button>
+                    <button class="difficulty-btn" data-difficulty="hard">HARD</button>
+                </div>
+                <button class="back-btn" id="backToMainFromDifficulty">← BACK</button>
+            </div>
+            
+            <!-- Waiting Room (2 Player) -->
+            <div class="menu-screen hidden" id="waitingRoom">
+                <h2>WAITING</h2>
+                <div class="waiting-animation">
+                    <div class="dot"></div>
+                    <div class="dot"></div>
+                    <div class="dot"></div>
+                </div>
+                <p>Waiting for opponent...</p>
+                <p class="waiting-timer" id="waitingTimer">Time remaining: 5:00</p>
+                <button class="back-btn" id="leaveQueue">← CANCEL</button>
+            </div>
+            
+            <!-- Game Over Screen -->
+            <div class="menu-screen hidden" id="gameOver">
+                <h2 id="gameOverTitle">GAME OVER</h2>
+                <p id="gameOverMessage">Press SPACE to return to menu</p>
+                <p class="game-over-text-mobile">Tap to return to menu</p>
+                <div class="game-over-buttons hidden" id="multiplayerButtons">
+                    <button class="mode-btn" id="rematchBtn">REMATCH</button>
+                    <button class="mode-btn" id="menuBtn">MENU</button>
+                </div>
+            </div>
+            
+            <!-- Swipe Guide (Mobile) -->
+            <div class="swipe-guide" id="swipeGuide">
+                <div class="swipe-arrows">
+                    <span class="arrow arrow-up">↑</span>
+                    <div class="arrow-row">
+                        <span class="arrow arrow-left">←</span>
+                        <span class="arrow arrow-down">↓</span>
+                        <span class="arrow arrow-right">→</span>
+                    </div>
+                </div>
+                <p>Swipe to move</p>
+            </div>
+        </div>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html>
